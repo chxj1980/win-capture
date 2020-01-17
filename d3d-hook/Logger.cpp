@@ -43,7 +43,7 @@ void Logger::init(char *pathname)
 
 	if (pathname != nullptr)
 	{
-		_ofs.open(pathname);
+		_ofs.open(pathname, std::ios::out | std::ios::binary);
 		if (_ofs.fail())
 		{
 			std::cerr << "Failed to open logfile." << std::endl;
