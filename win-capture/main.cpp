@@ -1,5 +1,13 @@
 #include <stdio.h>
+#include <TCHAR.H> 
 #include "inject.h"
+
+struct CaptureInfo
+{
+	int type = 0;
+	int a = 0;
+	int b = 0;
+};
 
 int main(int argc, char **argv)
 {
@@ -41,7 +49,43 @@ int main(int argc, char **argv)
 
 	printf("Inject d3d-hook.dll succeed.\n");
 
-	Sleep(10000);
+	Sleep(5000);
+
+	struct CaptureInfo captureInfo;
+	HANDLE  hMapFile = NULL;
+	char* buf = NULL;
+	TCHAR bufName[1024] = { 0 };
+	_stprintf_s(bufName, 1024, L"d3d-hook-%lu", pid);
+	
+	hMapFile = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, bufName);
+	if (NULL == hMapFile)
+	{
+		printf("OpenFileMapping() failed.\n");
+	}
+
+	buf = (char*)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(CaptureInfo));
+	if (NULL == buf)
+	{
+		printf("OpenFileMapping() failed.\n");
+	}
+	
+	if (buf != NULL)
+	{
+		memcpy(&captureInfo, buf, sizeof(CaptureInfo));
+		printf("map: %d %d %d\n", captureInfo.type, captureInfo.a, captureInfo.b);
+	}
+
+	getchar();
+
+	if (buf != NULL)
+	{
+		UnmapViewOfFile(buf);
+	}
+
+	if (hMapFile != NULL)
+	{
+		CloseHandle(hMapFile);
+	}
 
 	if (!EjectDLLByRemoteThread(pid, L"d3d-hook.dll"))
 	{
