@@ -5,9 +5,8 @@
 
 struct CaptureInfo
 {
-	int type = 0;
-	int a = 0;
-	int b = 0;
+	char type[16];
+	HANDLE handle;
 };
 
 int main(int argc, char **argv)
@@ -52,53 +51,53 @@ int main(int argc, char **argv)
 
 	printf("Inject d3d-hook.dll succeed.\n");
 
-	Sleep(2000);
-	if (!HookEvent::instance().wait(HookEvent::HOOK_D3D_INIT, 10000))
+	if (!HookEvent::instance().wait(HookEvent::HOOK_D3D_INIT, 20000))
 	{
 		printf("Wait for hook timeout.\n");
 	}
-
-	struct CaptureInfo captureInfo;
-	HANDLE  hMapFile = NULL;
-	char* buf = NULL;
-	TCHAR bufName[1024] = { 0 };
-	swprintf_s(bufName, 1024, L"d3d-hook-%lu", pid);
-	
-	hMapFile = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, bufName);
-	if (NULL == hMapFile)
+	else
 	{
-		printf("OpenFileMapping() failed.\n");
+		struct CaptureInfo captureInfo;
+		HANDLE  hMapFile = NULL;
+		char* buf = NULL;
+		TCHAR bufName[1024] = { 0 };
+		swprintf_s(bufName, 1024, L"d3d-hook-%lu", pid);
+
+		hMapFile = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, bufName);
+		if (NULL == hMapFile)
+		{
+			printf("OpenFileMapping() failed.\n");
+		}
+
+		buf = (char*)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(CaptureInfo));
+		if (NULL == buf)
+		{
+			printf("OpenFileMapping() failed.\n");
+		}
+
+		if (buf != NULL)
+		{
+			memcpy(&captureInfo, buf, sizeof(CaptureInfo));
+			printf("hook info: type:%s, handle:%llx \n", captureInfo.type, (uintptr_t)captureInfo.handle);
+		}
+
+		if (buf != NULL)
+		{
+			UnmapViewOfFile(buf);
+		}
+
+		if (hMapFile != NULL)
+		{
+			CloseHandle(hMapFile);
+		}
+
+		if (!EjectDLLByRemoteThread(pid, L"d3d-hook.dll"))
+		{
+			printf("EjectDLLByRemoteThread() failed.\n");
+			return 0;
+		}
 	}
 
-	buf = (char*)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(CaptureInfo));
-	if (NULL == buf)
-	{
-		printf("OpenFileMapping() failed.\n");
-	}
-
-	if (buf != NULL)
-	{
-		memcpy(&captureInfo, buf, sizeof(CaptureInfo));
-		printf("map: %d %d %d\n", captureInfo.type, captureInfo.a, captureInfo.b);
-	}
-
-	getchar();
-
-	if (buf != NULL)
-	{
-		UnmapViewOfFile(buf);
-	}
-
-	if (hMapFile != NULL)
-	{
-		CloseHandle(hMapFile);
-	}
-
-	if (!EjectDLLByRemoteThread(pid, L"d3d-hook.dll"))
-	{
-		printf("EjectDLLByRemoteThread() failed.\n");
-		return 0;
-	}
 
 	HookEvent::instance().exit();
 

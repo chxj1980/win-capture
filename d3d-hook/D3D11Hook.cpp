@@ -248,7 +248,6 @@ bool D3D11Hook::GetTextureInfo(D3D11TextureInfo *textureInfo)
 	textureInfo->width = m_width;
 	textureInfo->height = m_height;
 	textureInfo->format = m_format;
-	textureInfo->mutex = &m_mutex;
 	textureInfo->handle = m_handle;
 	textureInfo->timestamp = m_timestamp;
 	return true;

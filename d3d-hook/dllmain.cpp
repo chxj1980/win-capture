@@ -10,9 +10,8 @@ static HANDLE hThread = NULL;
 
 struct CaptureInfo
 {
-	int type = 0;
-	int a = 0;
-	int b = 0;
+	char type[16];
+	HANDLE handle;
 };
 
 DWORD __stdcall Attach(LPVOID)
@@ -43,17 +42,22 @@ DWORD __stdcall Attach(LPVOID)
 		LOG_ERROR("[Map] CreateFileMapping() failed.\n");
 	}
 
+	bool notify = false;
 	while (!stopLoop)
 	{		
-		//D3D11TextureInfo textureInfo;
-		//if (buf != NULL && D3D11Hook::instance().GetTextureInfo(&textureInfo))
-		//{			
-		//	captureInfo.type = 1;
-		//	captureInfo.a = 2;
-		//	captureInfo.b = 3;
-		//	memcpy(buf, &captureInfo, sizeof(CaptureInfo));
-		//	HookEvent::instance().notify(HookEvent::HOOK_D3D_INIT);
-		//}
+		if (!notify)
+		{
+			D3D11TextureInfo textureInfo;
+			if (buf != NULL && D3D11Hook::instance().GetTextureInfo(&textureInfo))
+			{
+				sprintf_s(captureInfo.type, 16, "%s", "d3d11");
+				captureInfo.handle = textureInfo.handle;
+				memcpy(buf, &captureInfo, sizeof(CaptureInfo));
+
+				HookEvent::instance().notify(HookEvent::HOOK_D3D_INIT);
+				notify = true;
+			}			
+		}
 
 		Sleep(100);
 	}

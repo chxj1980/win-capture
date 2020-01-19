@@ -13,7 +13,6 @@ struct D3D11TextureInfo
 	int height = 0;	
 	int timestamp = 0;
 	DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;
-	std::mutex* mutex = NULL;
 	HANDLE handle = NULL;
 };
 
