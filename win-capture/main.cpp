@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <TCHAR.H> 
 #include "inject.h"
+#include "HookEvent.h"
 
 struct CaptureInfo
 {
@@ -11,6 +12,8 @@ struct CaptureInfo
 
 int main(int argc, char **argv)
 {
+	HookEvent::instance().init();
+
 	char buf1[1024];
 	if (GetModuleFileNameA(NULL, buf1, sizeof(buf1)))
 	{
@@ -49,13 +52,17 @@ int main(int argc, char **argv)
 
 	printf("Inject d3d-hook.dll succeed.\n");
 
-	Sleep(5000);
+	Sleep(2000);
+	if (!HookEvent::instance().wait(HookEvent::HOOK_D3D_INIT, 10000))
+	{
+		printf("Wait for hook timeout.\n");
+	}
 
 	struct CaptureInfo captureInfo;
 	HANDLE  hMapFile = NULL;
 	char* buf = NULL;
 	TCHAR bufName[1024] = { 0 };
-	_stprintf_s(bufName, 1024, L"d3d-hook-%lu", pid);
+	swprintf_s(bufName, 1024, L"d3d-hook-%lu", pid);
 	
 	hMapFile = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, bufName);
 	if (NULL == hMapFile)
@@ -68,7 +75,7 @@ int main(int argc, char **argv)
 	{
 		printf("OpenFileMapping() failed.\n");
 	}
-	
+
 	if (buf != NULL)
 	{
 		memcpy(&captureInfo, buf, sizeof(CaptureInfo));
@@ -92,6 +99,8 @@ int main(int argc, char **argv)
 		printf("EjectDLLByRemoteThread() failed.\n");
 		return 0;
 	}
+
+	HookEvent::instance().exit();
 
 	printf("Eject d3d-hook.dll succeed.\n");
 

@@ -2,6 +2,7 @@
 #include <TCHAR.H> 
 #include "Logger.h"
 #include "D3D11Hook.h"
+#include "HookEvent.h"
 
 static char   dllPath[2048];
 static BOOL   stopLoop = false;
@@ -16,6 +17,8 @@ struct CaptureInfo
 
 DWORD __stdcall Attach(LPVOID)
 {
+	HookEvent::instance().init();
+
 	char pathname[2048];
 	sprintf_s(pathname, 2048, "%s%s", dllPath, "d3d-hook-log.txt");
 	Logger::instance().init(pathname);
@@ -26,7 +29,7 @@ DWORD __stdcall Attach(LPVOID)
 	char *buf = NULL;
 	HANDLE hMapFile = NULL;
 	TCHAR bufName[2048] = { 0 };
-	_stprintf_s(bufName, 2048, L"d3d-hook-%lu", GetCurrentProcessId());
+	swprintf_s(bufName, 2048, L"d3d-hook-%lu", GetCurrentProcessId());
 
 	hMapFile = ::CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(CaptureInfo), bufName);
 	if (hMapFile == NULL)
@@ -42,15 +45,17 @@ DWORD __stdcall Attach(LPVOID)
 
 	while (!stopLoop)
 	{		
-		if (buf != NULL)
-		{
-			captureInfo.type = 1;
-			captureInfo.a = 2;
-			captureInfo.b = 3;
-			memcpy(buf, &captureInfo, sizeof(CaptureInfo));
-		}
+		//D3D11TextureInfo textureInfo;
+		//if (buf != NULL && D3D11Hook::instance().GetTextureInfo(&textureInfo))
+		//{			
+		//	captureInfo.type = 1;
+		//	captureInfo.a = 2;
+		//	captureInfo.b = 3;
+		//	memcpy(buf, &captureInfo, sizeof(CaptureInfo));
+		//	HookEvent::instance().notify(HookEvent::HOOK_D3D_INIT);
+		//}
 
-		Sleep(10);
+		Sleep(100);
 	}
 
 	if (buf != NULL)
@@ -64,6 +69,7 @@ DWORD __stdcall Attach(LPVOID)
 	}
 
 	Logger::instance().exit();
+	HookEvent::instance().exit();
 	return 0;
 }
 
