@@ -130,6 +130,11 @@ void D3D11Hook::Detach()
 	DetourTransactionCommit();
 }
 
+D3D11Hook::~D3D11Hook()
+{
+	this->Exit();
+}
+
 D3D11Hook& D3D11Hook::instance()
 {
 	static D3D11Hook s_d3d11Hook;
@@ -178,7 +183,10 @@ bool D3D11Hook::Init(IDXGISwapChain *swapChain)
 
 bool D3D11Hook::InitTetxure()
 {
-	D3D11_TEXTURE2D_DESC desc = {};
+	std::lock_guard<std::mutex> locker(m_mutex);
+
+	D3D11_TEXTURE2D_DESC desc;
+	memset(&desc, 0, sizeof(D3D11_TEXTURE2D_DESC));
 	desc.Width = m_width;
 	desc.Height = m_height;
 	desc.MipLevels = 1;
@@ -186,8 +194,9 @@ bool D3D11Hook::InitTetxure()
 	desc.Format = m_format;
 	desc.BindFlags = 0;
 	desc.SampleDesc.Count = 1;
+	desc.CPUAccessFlags = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED; 
+	desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX; //D3D11_RESOURCE_MISC_SHARED;
 
 	HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_texture);
 	if (FAILED(hr))
@@ -196,11 +205,11 @@ bool D3D11Hook::InitTetxure()
 		return false;
 	}
 
-	IDXGIResource *dxgiRes;
+	IDXGIResource *dxgiRes = NULL;
 	hr = m_texture->QueryInterface(__uuidof(IDXGIResource), (void**)&dxgiRes);
 	if (FAILED(hr))
 	{
-		LOG_ERROR("[D3D11-Hook] ID3D11Texture2D::QueryInterface() failed: %lu", GetLastError());
+		LOG_ERROR("[D3D11-Hook] ID3D11Texture2D::QueryInterface(IDXGIResource) failed: %lu", GetLastError());
 		return false;
 	}
 
@@ -212,36 +221,72 @@ bool D3D11Hook::InitTetxure()
 		return false;
 	}
 
+	hr = m_texture->QueryInterface(_uuidof(IDXGIKeyedMutex), reinterpret_cast<void **>(&m_keyedMutex));
+	if (FAILED(hr))
+	{
+		LOG_ERROR("[D3D11-Hook] ID3D11Texture2D::QueryInterface(IDXGIKeyedMutex) failed: %lu", GetLastError());
+		return false;
+	}
+
 	return true;
 }
 
 void D3D11Hook::Exit()
 {
 	std::lock_guard<std::mutex> locker(m_mutex);
+
+	if (m_keyedMutex != NULL)
+	{
+		m_keyedMutex->Release();
+		m_keyedMutex = NULL;
+	}
+
 	if (m_texture != NULL)
 	{
 		m_texture->Release();
 		m_texture = NULL;
 	}
+
+	if (m_context != NULL)
+	{
+		m_context->Release();
+		m_context = NULL;
+	}
+
+	if (m_device != NULL)
+	{
+		m_device->Release();
+		m_device = NULL;
+	}
 }
 
 void D3D11Hook::Capture(ID3D11Resource *backbuffer)
 {
+	std::lock_guard<std::mutex> locker(m_mutex);
+
 	if (!swapChain || !m_texture)
 	{
 		return ;
 	}
 
-	if (m_context != NULL)
+	if (m_context != NULL && m_keyedMutex != NULL)
 	{
-		std::lock_guard<std::mutex> locker(m_mutex);
+		if (m_keyedMutex->AcquireSync(0, 1) != S_OK)
+		{
+			return ;
+		}
+		
 		m_context->CopyResource(m_texture, backbuffer);
 		m_timestamp += 1;
+
+		m_keyedMutex->ReleaseSync(m_lock);
 	}
 }
 
 bool D3D11Hook::GetTextureInfo(D3D11TextureInfo *textureInfo)
 {
+	std::lock_guard<std::mutex> locker(m_mutex);
+
 	if (!swapChain || !m_texture)
 	{
 		return false;
@@ -251,6 +296,7 @@ bool D3D11Hook::GetTextureInfo(D3D11TextureInfo *textureInfo)
 	textureInfo->height = m_height;
 	textureInfo->format = m_format;
 	textureInfo->handle = m_handle;
+	textureInfo->lock = m_lock = 1;
 	textureInfo->timestamp = m_timestamp;
 	return true;
 }

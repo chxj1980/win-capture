@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <d3d11.h>
 #include <D3Dcompiler.h>
+#include <wrl.h>
 #include <mutex>
 #include <memory>
 
@@ -14,8 +15,9 @@ struct D3D11TextureInfo
 {
 	int width  = 0;
 	int height = 0;	
+	int format = 0;
 	int timestamp = 0;
-	DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;
+	int lock = 1;
 	HANDLE handle = NULL;
 };
 
@@ -25,6 +27,7 @@ public:
 	static void Attach();
 	static void Detach();
 
+	~D3D11Hook();
 	static D3D11Hook& instance();
 
 	bool Init(IDXGISwapChain *swapChain);
@@ -38,13 +41,16 @@ private:
 	IDXGISwapChain* m_swapChain = NULL;
 	ID3D11Device* m_device = NULL;
 	ID3D11DeviceContext* m_context = NULL;
+	
 	int m_width = 0;
 	int m_height = 0;
 	int m_timestamp = 0;
 	DXGI_FORMAT m_format = DXGI_FORMAT_UNKNOWN;
 
 	std::mutex m_mutex;
-	ID3D11Texture2D *m_texture = NULL;
+	ID3D11Texture2D* m_texture = NULL;
+	IDXGIKeyedMutex* m_keyedMutex = NULL;
+	int m_lock = 0;
 	HANDLE m_handle = NULL;
 };
 

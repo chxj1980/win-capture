@@ -9,6 +9,10 @@ namespace hook
 struct HookInfo
 {
 	char type[16];
+	int format;
+	int width;
+	int height;
+	int lock;
 	HANDLE handle;
 };
 

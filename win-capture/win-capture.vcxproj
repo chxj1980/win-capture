@@ -93,6 +93,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)NvCodec;$(ProjectDir)NvCodec\NvEncoder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -105,6 +106,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)NvCodec;$(ProjectDir)NvCodec\NvEncoder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -113,6 +115,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)NvCodec;$(ProjectDir)NvCodec\NvEncoder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -123,6 +126,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)NvCodec;$(ProjectDir)NvCodec\NvEncoder;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -134,11 +138,19 @@
     <ClCompile Include="HookInfo.cpp" />
     <ClCompile Include="inject.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="NvCodec\NvEncoder\NvEncoder.cpp" />
+    <ClCompile Include="NvCodec\NvEncoder\NvEncoderD3D11.cpp" />
+    <ClCompile Include="nvenc.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="encoder_info.h" />
     <ClInclude Include="HookEvent.h" />
     <ClInclude Include="HookInfo.h" />
     <ClInclude Include="inject.h" />
+    <ClInclude Include="NvCodec\NvEncoder\nvEncodeAPI.h" />
+    <ClInclude Include="NvCodec\NvEncoder\NvEncoder.h" />
+    <ClInclude Include="NvCodec\NvEncoder\NvEncoderD3D11.h" />
+    <ClInclude Include="nvenc.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

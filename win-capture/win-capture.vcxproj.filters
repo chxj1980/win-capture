@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="源文件\nvenc">
+      <UniqueIdentifier>{3762534f-e653-4fe3-969a-d616a665d2c6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -27,6 +30,15 @@
     <ClCompile Include="HookInfo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="NvCodec\NvEncoder\NvEncoder.cpp">
+      <Filter>源文件\nvenc</Filter>
+    </ClCompile>
+    <ClCompile Include="NvCodec\NvEncoder\NvEncoderD3D11.cpp">
+      <Filter>源文件\nvenc</Filter>
+    </ClCompile>
+    <ClCompile Include="nvenc.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inject.h">
@@ -37,6 +49,21 @@
     </ClInclude>
     <ClInclude Include="HookInfo.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NvCodec\NvEncoder\nvEncodeAPI.h">
+      <Filter>源文件\nvenc</Filter>
+    </ClInclude>
+    <ClInclude Include="NvCodec\NvEncoder\NvEncoder.h">
+      <Filter>源文件\nvenc</Filter>
+    </ClInclude>
+    <ClInclude Include="NvCodec\NvEncoder\NvEncoderD3D11.h">
+      <Filter>源文件\nvenc</Filter>
+    </ClInclude>
+    <ClInclude Include="encoder_info.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="nvenc.h">
+      <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

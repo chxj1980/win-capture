@@ -9,7 +9,6 @@ static char   dllPath[2048];
 static BOOL   stopLoop = false;
 static HANDLE hThread = NULL;
 
-
 DWORD __stdcall Attach(LPVOID)
 {
 	char pathname[2048];
@@ -19,24 +18,47 @@ DWORD __stdcall Attach(LPVOID)
 	hook::HookEvent::instance().init();
 	hook::D3D11Hook::Attach();
 
+	HANDLE handle = NULL;
 	bool notify = false;
+	int timestamp = 0;
+	hook::D3D11TextureInfo textureInfo;
+	
 	while (!stopLoop)
 	{		
-		if (!notify)
+		bool ret = hook::D3D11Hook::instance().GetTextureInfo(&textureInfo);
+		if (ret)
 		{
-			hook::D3D11TextureInfo textureInfo;
-			if (hook::D3D11Hook::instance().GetTextureInfo(&textureInfo))
+			if (!notify)
 			{
 				hook::HookInfo info;
 				sprintf_s(info.type, 16, "%s", "d3d11");
 				info.handle = textureInfo.handle;
-				hook::SetHookInfo(&info, GetCurrentProcessId());
+				info.format = textureInfo.format;
+				info.width = textureInfo.width;
+				info.height = textureInfo.height;
+				info.lock = textureInfo.lock;
+
+				handle = hook::SetHookInfo(&info, GetCurrentProcessId());
 				hook::HookEvent::instance().notify(hook::HOOK_EVENT_D3D_INIT);
 				notify = true;
-			}			
+			}
+			else
+			{
+				if (timestamp != textureInfo.timestamp)
+				{
+					timestamp = textureInfo.timestamp;
+					hook::HookEvent::instance().notify(hook::HOOK_EVENT_D3D_PRESENT);
+				}
+			}
 		}
+		
+		Sleep(10);
+	}
 
-		Sleep(100);
+	if (notify)
+	{
+		hook::CloseHookInfo(handle);
+		hook::D3D11Hook::instance().Exit();
 	}
 
 	hook::HookEvent::instance().exit();

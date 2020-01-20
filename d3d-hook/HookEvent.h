@@ -27,7 +27,7 @@ public:
 private:
 	HookEvent();
 
-	bool m_isEnabled;
+	bool m_isEnabled = false;
 	std::mutex m_mutex;
 	std::map<const char*, HANDLE> m_events;
 };

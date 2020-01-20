@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <tchar.h> 
 
-bool hook::SetHookInfo(struct HookInfo *info, unsigned long pid)
+HANDLE hook::SetHookInfo(struct HookInfo *info, unsigned long pid)
 {
 	char *buf = NULL;
 	HANDLE hMapFile = NULL;
@@ -12,28 +12,36 @@ bool hook::SetHookInfo(struct HookInfo *info, unsigned long pid)
 	hMapFile = ::CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(HookInfo), name);
 	if (hMapFile == NULL)
 	{
-		return false;
+		return NULL;
 	}
 
 	buf = (char*)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(HookInfo));
 	if (buf == NULL)
 	{
-		return false;
+		return NULL;
 	}
 
 	memcpy(buf, info, sizeof(HookInfo));
 
-	//if (buf != NULL)
-	//{
-	//	UnmapViewOfFile(buf);
-	//}
+	if (buf != NULL)
+	{
+		UnmapViewOfFile(buf);
+	}
 
 	//if (hMapFile != NULL)
 	//{
 	//	CloseHandle(hMapFile);
 	//}
 
-	return true;
+	return hMapFile;
+}
+
+void hook::CloseHookInfo(HANDLE handle)
+{
+	if (handle != NULL)
+	{
+		CloseHandle(handle);
+	}
 }
 
 bool hook::GetHookInfo(struct HookInfo *info, unsigned long pid)

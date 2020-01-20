@@ -33,6 +33,9 @@ void HookEvent::init()
 		swprintf_s(name, 1024, L"%S", HOOK_EVENT_D3D_EXIT);
 		m_events[HOOK_EVENT_D3D_EXIT] = CreateEvent(NULL, FALSE, FALSE, name);
 
+		swprintf_s(name, 1024, L"%S", HOOK_EVENT_D3D_PRESENT);
+		m_events[HOOK_EVENT_D3D_PRESENT] = CreateEvent(NULL, FALSE, FALSE, name);
+
 		m_isEnabled = true;
 	}
 }
