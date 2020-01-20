@@ -11,6 +11,8 @@
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib,"d3dcompiler.lib")
 
+using namespace hook;
+
 static IDXGISwapChain* swapChain = NULL;
 static ID3D11Device* d3d11Device = NULL;
 static ID3D11DeviceContext* d3d11Context = NULL;

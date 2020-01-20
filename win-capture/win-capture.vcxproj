@@ -131,11 +131,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="HookEvent.cpp" />
+    <ClCompile Include="HookInfo.cpp" />
     <ClCompile Include="inject.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HookEvent.h" />
+    <ClInclude Include="HookInfo.h" />
     <ClInclude Include="inject.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

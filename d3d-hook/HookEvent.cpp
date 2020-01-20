@@ -1,7 +1,6 @@
 #include "HookEvent.h"
 
-std::string HookEvent::HOOK_D3D_INIT = "HOOK_D3D_INIT";
-std::string HookEvent::HOOK_D3D_EXIT = "HOOK_D3D_EXIT";
+using namespace hook;
 
 HookEvent::HookEvent()
 	: m_isEnabled(false)
@@ -28,11 +27,11 @@ void HookEvent::init()
 	{
 		TCHAR name[1024];
 
-		swprintf_s(name, 1024, L"%S", HOOK_D3D_INIT.c_str());
-		m_events[HOOK_D3D_INIT] = CreateEvent(NULL, FALSE, FALSE, name);
-		
-		swprintf_s(name, 1024, L"%S", HOOK_D3D_EXIT.c_str());
-		m_events[HOOK_D3D_EXIT] = CreateEvent(NULL, FALSE, FALSE, name);
+		swprintf_s(name, 1024, L"%S", HOOK_EVENT_D3D_INIT);
+		m_events[HOOK_EVENT_D3D_INIT] = CreateEvent(NULL, FALSE, FALSE, name);
+
+		swprintf_s(name, 1024, L"%S", HOOK_EVENT_D3D_EXIT);
+		m_events[HOOK_EVENT_D3D_EXIT] = CreateEvent(NULL, FALSE, FALSE, name);
 
 		m_isEnabled = true;
 	}
@@ -49,10 +48,11 @@ void HookEvent::exit()
 		{
 			CloseHandle(iter.second);
 		}
+		m_events.clear();
 	}
 }
 
-bool HookEvent::wait(std::string event, int msec)
+bool HookEvent::wait(const char* event, int msec)
 {
 	std::lock_guard<std::mutex> locker(m_mutex);
 
@@ -65,13 +65,13 @@ bool HookEvent::wait(std::string event, int msec)
 			{
 				return true;
 			}
-		}		
+		}
 	}
 
 	return false;
 }
 
-bool HookEvent::notify(std::string event)
+bool HookEvent::notify(const char* event)
 {
 	std::lock_guard<std::mutex> locker(m_mutex);
 
@@ -84,6 +84,6 @@ bool HookEvent::notify(std::string event)
 			return true;
 		}
 	}
-	
+
 	return false;
 }

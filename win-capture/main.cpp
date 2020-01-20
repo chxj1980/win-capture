@@ -2,17 +2,10 @@
 #include <TCHAR.H> 
 #include "inject.h"
 #include "HookEvent.h"
-
-struct CaptureInfo
-{
-	char type[16];
-	HANDLE handle;
-};
+#include "HookInfo.h"
 
 int main(int argc, char **argv)
 {
-	HookEvent::instance().init();
-
 	char buf1[1024];
 	if (GetModuleFileNameA(NULL, buf1, sizeof(buf1)))
 	{
@@ -51,55 +44,32 @@ int main(int argc, char **argv)
 
 	printf("Inject d3d-hook.dll succeed.\n");
 
-	if (!HookEvent::instance().wait(HookEvent::HOOK_D3D_INIT, 20000))
+
+	hook::HookEvent::instance().init();
+
+	if (!hook::HookEvent::instance().wait(hook::HOOK_EVENT_D3D_INIT, 20000))
 	{
 		printf("Wait for hook timeout.\n");
 	}
 	else
 	{
-		struct CaptureInfo captureInfo;
-		HANDLE  hMapFile = NULL;
-		char* buf = NULL;
-		TCHAR bufName[1024] = { 0 };
-		swprintf_s(bufName, 1024, L"d3d-hook-%lu", pid);
-
-		hMapFile = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, bufName);
-		if (NULL == hMapFile)
+		hook::HookInfo info;
+		if (hook::GetHookInfo(&info, pid))
 		{
-			printf("OpenFileMapping() failed.\n");
-		}
-
-		buf = (char*)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(CaptureInfo));
-		if (NULL == buf)
-		{
-			printf("OpenFileMapping() failed.\n");
-		}
-
-		if (buf != NULL)
-		{
-			memcpy(&captureInfo, buf, sizeof(CaptureInfo));
-			printf("hook info: type:%s, handle:%llx \n", captureInfo.type, (uintptr_t)captureInfo.handle);
-		}
-
-		if (buf != NULL)
-		{
-			UnmapViewOfFile(buf);
-		}
-
-		if (hMapFile != NULL)
-		{
-			CloseHandle(hMapFile);
-		}
-
-		if (!EjectDLLByRemoteThread(pid, L"d3d-hook.dll"))
-		{
-			printf("EjectDLLByRemoteThread() failed.\n");
-			return 0;
+			printf("hook info: type:%s, handle:%llx \n", info.type, (uintptr_t)info.handle);
 		}
 	}
 
+	printf("\nPlease press enter to continue ...\n");
+	getchar();
 
-	HookEvent::instance().exit();
+	hook::HookEvent::instance().exit();
+
+	if (!EjectDLLByRemoteThread(pid, L"d3d-hook.dll"))
+	{
+		printf("EjectDLLByRemoteThread() failed.\n");
+		return 0;
+	}
 
 	printf("Eject d3d-hook.dll succeed.\n");
 

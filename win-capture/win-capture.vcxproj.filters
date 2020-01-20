@@ -24,12 +24,18 @@
     <ClCompile Include="HookEvent.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="HookInfo.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inject.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="HookEvent.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HookInfo.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

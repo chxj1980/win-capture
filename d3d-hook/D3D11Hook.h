@@ -7,6 +7,9 @@
 #include <mutex>
 #include <memory>
 
+namespace hook
+{
+
 struct D3D11TextureInfo
 {
 	int width  = 0;
@@ -44,5 +47,7 @@ private:
 	ID3D11Texture2D *m_texture = NULL;
 	HANDLE m_handle = NULL;
 };
+
+}
 
 #endif
